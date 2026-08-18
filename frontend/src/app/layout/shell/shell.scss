@@ -1,0 +1,4 @@
+.shell { display: grid; grid-template-columns: 16rem 1fr; min-height: 100dvh; }
+.workspace { min-width: 0; background: var(--surface-muted); }
+.content { padding: 2rem; }
+@media (max-width: 800px) { .shell { grid-template-columns: 1fr; } }

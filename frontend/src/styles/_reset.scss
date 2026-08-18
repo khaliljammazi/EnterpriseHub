@@ -1,0 +1,4 @@
+*, *::before, *::after { box-sizing: border-box; }
+html { color-scheme: light; }
+body { margin: 0; min-width: 20rem; }
+button, input, select, textarea { font: inherit; }

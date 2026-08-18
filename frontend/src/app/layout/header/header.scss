@@ -1,0 +1,4 @@
+header { align-items: center; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; min-height: 4.5rem; padding: 0 2rem; }
+div { display: flex; flex-direction: column; gap: .15rem; }
+span { color: var(--text-muted); font-size: .8rem; }
+button { background: transparent; border: 1px solid var(--border); border-radius: .6rem; cursor: pointer; padding: .6rem .9rem; }

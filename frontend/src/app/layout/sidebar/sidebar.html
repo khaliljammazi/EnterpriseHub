@@ -1,0 +1,8 @@
+<aside>
+  <a class="brand" routerLink="/dashboard">EH<span>EnterpriseHub</span></a>
+  <nav aria-label="Main navigation">
+    @for (link of links; track link[1]) {
+      <a [routerLink]="link[1]" routerLinkActive="active">{{ link[0] }}</a>
+    }
+  </nav>
+</aside>
