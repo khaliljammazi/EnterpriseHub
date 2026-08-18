@@ -1,0 +1,44 @@
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Java / Maven
+backend/target/
+*.class
+
+# Angular / Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/out-tsc/
+frontend/.angular/cache/
+frontend/coverage/
+frontend/.sass-cache/
+
+# IDEs and editors
+.idea/
+**/.idea/
+*.iml
+.vscode/
+**/.vscode/
+.project
+.classpath
+.settings/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary and generated artifacts
+tmp/
+output/
+*.tmp
+*.swp
+*~

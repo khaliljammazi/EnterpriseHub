@@ -1,0 +1,5 @@
+ALTER TABLE companies
+    ADD COLUMN company_type VARCHAR(50) NOT NULL DEFAULT 'SMALL_BUSINESS';
+
+ALTER TABLE companies
+    ALTER COLUMN company_type DROP DEFAULT;

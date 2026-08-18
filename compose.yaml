@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: enterprisehub-postgres
+    environment:
+      POSTGRES_DB: enterprisehub
+      POSTGRES_USER: enterprisehub
+      POSTGRES_PASSWORD: local_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - enterprisehub_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enterprisehub -d enterprisehub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  enterprisehub_postgres_data:

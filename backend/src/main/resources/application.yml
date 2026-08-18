@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: enterprisehub-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/enterprisehub}
+    username: ${DATABASE_USERNAME:enterprisehub}
+    password: ${DATABASE_PASSWORD:local_password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
