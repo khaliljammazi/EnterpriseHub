@@ -2,6 +2,8 @@
 
 EnterpriseHub is a multi-business management platform. It provides shared business functionality to every organization and enables specialized modules based on the organization's type and operational needs.
 
+It is also a collaborative learning project. The team will use it to practise modular application design, event-driven systems with Apache Kafka, real-time communication with WebRTC, and container orchestration with Kubernetes.
+
 The platform is designed to support several company types:
 
 - `STARTUP`
@@ -29,6 +31,8 @@ Functionality available across company types can include:
 - Subscription and billing
 - Audit logs
 - Multiple business locations
+- Real-time video meetings
+- Event-driven notifications and integrations
 
 ## Company-specific functionality
 
@@ -115,6 +119,62 @@ MALL           -> EMPLOYEES, DOCUMENTS, ANALYTICS, tenant-management modules
 
 Modules can later be enabled or disabled independently. This allows, for example, an enterprise to operate a POS system or two grocery stores to use different feature sets.
 
+## Planned technical architecture
+
+```mermaid
+flowchart LR
+    Browser[Angular frontend] -->|REST/HTTP| API[Spring Boot backend]
+    Browser <-->|WebRTC media| Peer[Meeting participant]
+    Browser -->|Signaling| API
+    API --> DB[(PostgreSQL)]
+    API -->|Publish and consume events| Kafka[(Apache Kafka)]
+    Kafka --> Workers[Notifications and background consumers]
+    K8s[Kubernetes] -. deploys .-> Browser
+    K8s -. deploys .-> API
+    K8s -. manages .-> Workers
+```
+
+### Apache Kafka
+
+Kafka will be introduced when the project has real asynchronous workflows. Planned examples include:
+
+- `sale.completed` updates inventory and reporting.
+- `stock.low` triggers notifications.
+- `purchase.received` creates stock movements.
+- `company.created` prepares default modules.
+- Audit events record important business actions.
+
+Kafka should not replace normal synchronous CRUD calls. The REST API remains appropriate when a user needs an immediate response. Event schemas, retry behavior, idempotency, and dead-letter handling must be designed before Kafka is used in production.
+
+### WebRTC video calls
+
+WebRTC will support real-time meetings for company members. The browser handles peer media, while the backend provides authenticated signaling and meeting authorization. The learning scope includes:
+
+- Camera and microphone permissions
+- Peer connections and media tracks
+- Signaling over WebSocket
+- STUN/TURN connectivity
+- Screen sharing
+- Meeting access control
+- Connection cleanup and error states
+
+For larger group calls, the project may later evaluate an SFU instead of relying on peer-to-peer mesh connections.
+
+### DevOps and Kubernetes
+
+Kubernetes is a later deployment stage, after local Docker-based development is stable. The planned learning scope includes:
+
+- Container images for frontend and backend
+- Deployments, Services, and Ingress
+- ConfigMaps and Secrets
+- Readiness and liveness probes
+- Resource requests and limits
+- Horizontal scaling
+- Database and Kafka connectivity
+- CI/CD, observability, and rollback strategies
+
+Local development should remain simple with Docker Compose. Kubernetes manifests and deployment notes belong under `infrastructure/kubernetes`.
+
 ## Recommended development roadmap
 
 1. Complete company management.
@@ -126,7 +186,11 @@ Modules can later be enabled or disabled independently. This allows, for example
 7. Add suppliers and purchases.
 8. Add POS, sales, receipts, and cash-register sessions.
 9. Add reporting and notifications.
-10. Add startup, mall, and enterprise-specific modules.
+10. Introduce Kafka through one justified business event.
+11. Add authenticated WebRTC signaling and one-to-one video calls.
+12. Containerize the applications and create CI pipelines.
+13. Deploy the stateless services to Kubernetes.
+14. Add startup, mall, and enterprise-specific modules.
 
 The first focused product can be **EnterpriseHub Grocery**: a multi-company POS and inventory platform built on the shared EnterpriseHub foundation. Once that workflow is complete, the same platform can be expanded for other organization types.
 
@@ -134,9 +198,12 @@ The first focused product can be **EnterpriseHub Grocery**: a multi-company POS 
 
 ```text
 EnterpriseHub AI/
-|-- backend/       Spring Boot API
-|-- compose.yaml   Local infrastructure
-|-- README.md      Product vision and roadmap
+|-- backend/          Spring Boot API and Kafka integration
+|-- frontend/         Angular application and WebRTC client
+|-- docs/             Architecture and learning notes
+|-- infrastructure/   Kubernetes and deployment configuration
+|-- compose.yaml      Local infrastructure
+|-- README.md         Product vision and roadmap
 ```
 
-Backend setup and API instructions are documented in [`backend/README.md`](backend/README.md).
+Backend setup is documented in [`backend/README.md`](backend/README.md), and frontend setup is documented in [`frontend/README.md`](frontend/README.md). The future-system notes live under [`docs/architecture`](docs/architecture).
