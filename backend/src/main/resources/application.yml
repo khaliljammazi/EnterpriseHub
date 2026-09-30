@@ -23,3 +23,5 @@ enterprisehub:
   security:
     admin-username: ${APP_ADMIN_USERNAME:admin}
     admin-password: ${APP_ADMIN_PASSWORD:change-me}
+    jwt-secret: ${JWT_SECRET:local-development-jwt-secret-change-me-now}
+    jwt-ttl: ${JWT_TTL:PT1H}

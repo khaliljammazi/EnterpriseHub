@@ -2,6 +2,7 @@ package com.enterprisehub.backend.security;
 
 import com.enterprisehub.backend.company.application.CompanyService;
 import com.enterprisehub.backend.company.presentation.CompanyController;
+import com.enterprisehub.backend.identity.domain.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -35,6 +36,9 @@ class SecurityConfigurationTest {
 
     @MockitoBean
     private CompanyService companyService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Test
     void rejectsAnAnonymousRequest() throws Exception {
