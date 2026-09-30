@@ -18,3 +18,8 @@ management:
     web:
       exposure:
         include: health,info
+
+enterprisehub:
+  security:
+    admin-username: ${APP_ADMIN_USERNAME:admin}
+    admin-password: ${APP_ADMIN_PASSWORD:change-me}

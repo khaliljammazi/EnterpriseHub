@@ -1,4 +1,4 @@
-package com.enterprisehub.backend.company;
+package com.enterprisehub.backend.company.domain;
 
 public enum CompanyType {
     STARTUP,

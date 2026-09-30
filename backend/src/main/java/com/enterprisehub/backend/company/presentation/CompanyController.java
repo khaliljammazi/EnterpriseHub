@@ -1,12 +1,13 @@
-package com.enterprisehub.backend.company;
+package com.enterprisehub.backend.company.presentation;
 
+import com.enterprisehub.backend.company.application.CompanyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,17 +27,19 @@ public class CompanyController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompanyResponse create(@Valid @RequestBody CreateCompanyRequest request) {
-        return companyService.create(request);
+        return CompanyResponse.from(companyService.create(request.toCommand()));
     }
 
     @GetMapping
     public List<CompanyResponse> findAll() {
-        return companyService.findAll();
+        return companyService.findAll().stream()
+                .map(CompanyResponse::from)
+                .toList();
     }
 
     @GetMapping("/{id}")
     public CompanyResponse findById(@PathVariable UUID id) {
-        return companyService.findById(id);
+        return CompanyResponse.from(companyService.findById(id));
     }
 
     @PutMapping("/{id}")
@@ -44,11 +47,12 @@ public class CompanyController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateCompanyRequest request
     ) {
-        return companyService.update(id, request);
+        return CompanyResponse.from(companyService.update(id, request.toCommand()));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {
-        companyService.deleteCompany(id);   }
+        companyService.deleteCompany(id);
+    }
 }

@@ -1,21 +1,26 @@
-package com.enterprisehub.backend.company;
+package com.enterprisehub.backend.company.application;
 
 import com.enterprisehub.backend.common.ConflictException;
 import com.enterprisehub.backend.common.NotFoundException;
+import com.enterprisehub.backend.company.domain.Company;
+import com.enterprisehub.backend.company.domain.CompanyName;
+import com.enterprisehub.backend.company.domain.CompanyRepository;
+import com.enterprisehub.backend.company.domain.CompanyType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.UUID;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,29 +34,33 @@ class CompanyServiceTest {
 
     @Test
     void createsACompany() {
-        when(companyRepository.existsByNameIgnoreCase("EnterpriseHub")).thenReturn(false);
+        when(companyRepository.existsByName(CompanyName.of("EnterpriseHub"))).thenReturn(false);
         when(companyRepository.save(any(Company.class))).thenAnswer(invocation -> {
             Company company = invocation.getArgument(0);
-            ReflectionTestUtils.setField(company, "id", UUID.randomUUID());
-            return company;
+            return Company.rehydrate(
+                    UUID.randomUUID(),
+                    company.name(),
+                    company.companyType(),
+                    company.createdAt()
+            );
         });
 
-        CompanyResponse response = companyService.create(
-                new CreateCompanyRequest(" EnterpriseHub ", CompanyType.STARTUP)
+        CompanyResult result = companyService.create(
+                new CreateCompanyCommand(" EnterpriseHub ", CompanyType.STARTUP)
         );
 
-        assertThat(response.name()).isEqualTo("EnterpriseHub");
-        assertThat(response.id()).isNotNull();
-        assertThat(response.companyType()).isEqualTo(CompanyType.STARTUP);
-        assertThat(response.createdAt()).isNotNull();
+        assertThat(result.name()).isEqualTo("EnterpriseHub");
+        assertThat(result.id()).isNotNull();
+        assertThat(result.companyType()).isEqualTo(CompanyType.STARTUP);
+        assertThat(result.createdAt()).isNotNull();
     }
 
     @Test
     void rejectsADuplicateCompanyName() {
-        when(companyRepository.existsByNameIgnoreCase("EnterpriseHub")).thenReturn(true);
+        when(companyRepository.existsByName(CompanyName.of("EnterpriseHub"))).thenReturn(true);
 
         assertThatThrownBy(() -> companyService.create(
-                new CreateCompanyRequest("EnterpriseHub", CompanyType.ENTERPRISE)))
+                new CreateCompanyCommand("EnterpriseHub", CompanyType.ENTERPRISE)))
                 .isInstanceOf(ConflictException.class)
                 .hasMessage("A company with this name already exists");
     }
@@ -62,10 +71,10 @@ class CompanyServiceTest {
         Company company = company("EnterpriseHub", CompanyType.ENTERPRISE, id);
         when(companyRepository.findById(id)).thenReturn(Optional.of(company));
 
-        CompanyResponse response = companyService.findById(id);
+        CompanyResult result = companyService.findById(id);
 
-        assertThat(response.id()).isEqualTo(id);
-        assertThat(response.companyType()).isEqualTo(CompanyType.ENTERPRISE);
+        assertThat(result.id()).isEqualTo(id);
+        assertThat(result.companyType()).isEqualTo(CompanyType.ENTERPRISE);
     }
 
     @Test
@@ -74,7 +83,7 @@ class CompanyServiceTest {
         Company second = company("Second", CompanyType.MALL, UUID.randomUUID());
         when(companyRepository.findAll()).thenReturn(List.of(first, second));
 
-        assertThat(companyService.findAll()).extracting(CompanyResponse::name)
+        assertThat(companyService.findAll()).extracting(CompanyResult::name)
                 .containsExactly("First", "Second");
     }
 
@@ -83,13 +92,18 @@ class CompanyServiceTest {
         UUID id = UUID.randomUUID();
         Company company = company("Old name", CompanyType.STARTUP, id);
         when(companyRepository.findById(id)).thenReturn(Optional.of(company));
-        when(companyRepository.existsByNameIgnoreCaseAndIdNot("New name", id)).thenReturn(false);
+        when(companyRepository.existsByNameExcludingId(CompanyName.of("New name"), id))
+                .thenReturn(false);
+        when(companyRepository.save(company)).thenReturn(company);
 
-        CompanyResponse response = companyService.update(
-                id, new UpdateCompanyRequest(" New name ", CompanyType.GROCERY_STORE));
+        CompanyResult result = companyService.update(
+                id,
+                new UpdateCompanyCommand(" New name ", CompanyType.GROCERY_STORE)
+        );
 
-        assertThat(response.name()).isEqualTo("New name");
-        assertThat(response.companyType()).isEqualTo(CompanyType.GROCERY_STORE);
+        assertThat(result.name()).isEqualTo("New name");
+        assertThat(result.companyType()).isEqualTo(CompanyType.GROCERY_STORE);
+        verify(companyRepository).save(company);
     }
 
     @Test
@@ -108,14 +122,12 @@ class CompanyServiceTest {
         Company company = company("EnterpriseHub", CompanyType.STARTUP, id);
         when(companyRepository.findById(id)).thenReturn(Optional.of(company));
 
-        companyService.delete(id);
+        companyService.deleteCompany(id);
 
-        org.mockito.Mockito.verify(companyRepository).delete(company);
+        verify(companyRepository).deleteById(id);
     }
 
     private Company company(String name, CompanyType type, UUID id) {
-        Company company = new Company(name, type);
-        ReflectionTestUtils.setField(company, "id", id);
-        return company;
+        return Company.rehydrate(id, CompanyName.of(name), type, Instant.now());
     }
 }

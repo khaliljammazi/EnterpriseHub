@@ -1,7 +1,10 @@
-package com.enterprisehub.backend.company;
+package com.enterprisehub.backend.company.application;
 
 import com.enterprisehub.backend.common.ConflictException;
 import com.enterprisehub.backend.common.NotFoundException;
+import com.enterprisehub.backend.company.domain.Company;
+import com.enterprisehub.backend.company.domain.CompanyName;
+import com.enterprisehub.backend.company.domain.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,42 +19,45 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
 
     @Transactional
-    public CompanyResponse create(CreateCompanyRequest request) {
-        String name = request.name().trim();
-        if (companyRepository.existsByNameIgnoreCase(name)) {
+    public CompanyResult create(CreateCompanyCommand command) {
+        CompanyName name = CompanyName.of(command.name());
+        if (companyRepository.existsByName(name)) {
             throw new ConflictException("A company with this name already exists");
         }
-        Company company = new Company(name, request.companyType());
-        return CompanyResponse.from(companyRepository.save(company));
+
+        Company company = Company.create(name, command.companyType());
+        return CompanyResult.from(companyRepository.save(company));
     }
 
     @Transactional(readOnly = true)
-    public List<CompanyResponse> findAll() {
+    public List<CompanyResult> findAll() {
         return companyRepository.findAll().stream()
-                .map(CompanyResponse::from)
+                .map(CompanyResult::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CompanyResponse findById(UUID id) {
-        return CompanyResponse.from(findCompany(id));
+    public CompanyResult findById(UUID id) {
+        return CompanyResult.from(findCompany(id));
     }
 
     @Transactional
-    public CompanyResponse update(UUID id, UpdateCompanyRequest request) {
+    public CompanyResult update(UUID id, UpdateCompanyCommand command) {
         Company company = findCompany(id);
-        String name = request.name().trim();
-        if (companyRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
+        CompanyName name = CompanyName.of(command.name());
+
+        if (companyRepository.existsByNameExcludingId(name, id)) {
             throw new ConflictException("A company with this name already exists");
         }
-        company.update(name, request.companyType());
-        return CompanyResponse.from(company);
+
+        company.update(name, command.companyType());
+        return CompanyResult.from(companyRepository.save(company));
     }
 
     @Transactional
     public void deleteCompany(UUID id) {
-        Company company = findCompany(id);
-        companyRepository.delete(company);
+        findCompany(id);
+        companyRepository.deleteById(id);
     }
 
     private Company findCompany(UUID id) {

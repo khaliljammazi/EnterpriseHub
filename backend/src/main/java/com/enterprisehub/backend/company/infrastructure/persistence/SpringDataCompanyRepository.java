@@ -1,10 +1,10 @@
-package com.enterprisehub.backend.company;
+package com.enterprisehub.backend.company.infrastructure.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface CompanyRepository extends JpaRepository<Company, UUID> {
+interface SpringDataCompanyRepository extends JpaRepository<CompanyJpaEntity, UUID> {
 
     boolean existsByNameIgnoreCase(String name);
 

@@ -42,3 +42,7 @@ output/
 *.tmp
 *.swp
 *~
+build_grade_sheet.py
+create_fifth_b_grade_sheet.py
+*.docx
+sort_students_arabic.py
