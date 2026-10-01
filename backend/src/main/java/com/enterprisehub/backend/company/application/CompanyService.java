@@ -3,6 +3,7 @@ package com.enterprisehub.backend.company.application;
 import com.enterprisehub.backend.common.ConflictException;
 import com.enterprisehub.backend.common.NotFoundException;
 import com.enterprisehub.backend.company.domain.Company;
+import com.enterprisehub.backend.company.domain.CompanyCreatedEvent;
 import com.enterprisehub.backend.company.domain.CompanyName;
 import com.enterprisehub.backend.company.domain.CompanyRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final CompanyEventPublisher companyEventPublisher;
 
     @Transactional
     public CompanyResult create(CreateCompanyCommand command) {
@@ -26,7 +28,9 @@ public class CompanyService {
         }
 
         Company company = Company.create(name, command.companyType());
-        return CompanyResult.from(companyRepository.save(company));
+        Company savedCompany = companyRepository.save(company);
+        companyEventPublisher.publish(CompanyCreatedEvent.from(savedCompany));
+        return CompanyResult.from(savedCompany);
     }
 
     @Transactional(readOnly = true)

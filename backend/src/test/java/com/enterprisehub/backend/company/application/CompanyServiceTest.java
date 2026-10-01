@@ -3,6 +3,7 @@ package com.enterprisehub.backend.company.application;
 import com.enterprisehub.backend.common.ConflictException;
 import com.enterprisehub.backend.common.NotFoundException;
 import com.enterprisehub.backend.company.domain.Company;
+import com.enterprisehub.backend.company.domain.CompanyCreatedEvent;
 import com.enterprisehub.backend.company.domain.CompanyName;
 import com.enterprisehub.backend.company.domain.CompanyRepository;
 import com.enterprisehub.backend.company.domain.CompanyType;
@@ -20,6 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +30,9 @@ class CompanyServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
+
+    @Mock
+    private CompanyEventPublisher companyEventPublisher;
 
     @InjectMocks
     private CompanyService companyService;
@@ -53,6 +58,11 @@ class CompanyServiceTest {
         assertThat(result.id()).isNotNull();
         assertThat(result.companyType()).isEqualTo(CompanyType.STARTUP);
         assertThat(result.createdAt()).isNotNull();
+        verify(companyEventPublisher).publish(argThat(event ->
+                event.companyId().equals(result.id())
+                        && event.companyName().equals("EnterpriseHub")
+                        && event.companyType() == CompanyType.STARTUP
+        ));
     }
 
     @Test

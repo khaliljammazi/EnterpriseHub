@@ -12,6 +12,18 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:enterprisehub-notifications}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.enterprisehub.backend.company.domain,com.enterprisehub.backend.product.domain
 
 management:
   endpoints:
@@ -20,6 +32,11 @@ management:
         include: health,info
 
 enterprisehub:
+  messaging:
+    kafka:
+      enabled: ${KAFKA_ENABLED:false}
+      company-events-topic: ${KAFKA_COMPANY_EVENTS_TOPIC:company-events}
+      product-events-topic: ${KAFKA_PRODUCT_EVENTS_TOPIC:product-events}
   security:
     admin-username: ${APP_ADMIN_USERNAME:admin}
     admin-password: ${APP_ADMIN_PASSWORD:change-me}
